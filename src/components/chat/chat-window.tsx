@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Message from './message';
 import { getInitial } from '@/lib/utils/chatUtils';
@@ -21,6 +21,7 @@ interface ChatWindowProps {
 
 export default function ChatWindow({ contact, messages, onSendMessage, loading }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,6 +34,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSending(true);
     debouncedSend(newMessage); 
   };
 
@@ -43,6 +45,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
         if (!trimmed) return;
         onSendMessage(trimmed);
         setNewMessage(""); 
+        setIsSending(false);
       }, 1000),
     [onSendMessage]
   );
@@ -102,14 +105,18 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
           />
           <Button
             type="submit"
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || isSending}
             size="icon"
             className={cn(
               "rounded-full",
               !newMessage.trim() && "opacity-50 cursor-not-allowed"
             )}
           >
-            <Send className="h-5 w-5" />
+            {isSending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </form>
