@@ -24,21 +24,23 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSend = debounce((e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    console.log("Aaaaaaaaaaaa");
     e.preventDefault();
     if (newMessage.trim()) {
       onSendMessage(newMessage);
       setNewMessage('');
     }
-  }, 1000);
+  };
+
+  const debouncedSend = useCallback(debounce(handleSubmit, 1000), []);
 
   if (!contact) {
     return (
@@ -84,7 +86,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
         </div>
       </ScrollArea>
 
-      <form onSubmit={debouncedSend} className="px-6 py-4 border-t">
+      <form onSubmit={handleSubmit} className="px-6 py-4 border-t">
         <div className="flex items-center space-x-3">
           <Input
             type="text"
