@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Contact, Message as MessageType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Message from './message';
 import { getInitial } from '@/lib/utils/chatUtils';
+import debounce from 'lodash.debounce';
 
 interface ChatWindowProps {
   contact: Contact | null;
@@ -30,13 +31,14 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSend = debounce((e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim()) {
       onSendMessage(newMessage);
       setNewMessage('');
     }
-  };
+  }, 1000);
 
   if (!contact) {
     return (
@@ -82,7 +84,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="px-6 py-4 border-t">
+      <form onSubmit={debouncedSend} className="px-6 py-4 border-t">
         <div className="flex items-center space-x-3">
           <Input
             type="text"
