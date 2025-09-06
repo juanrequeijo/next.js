@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Contact, Message as MessageType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,15 +32,20 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    console.log("Aaaaaaaaaaaa");
     e.preventDefault();
-    if (newMessage.trim()) {
-      onSendMessage(newMessage);
-      setNewMessage('');
-    }
+    debouncedSend(newMessage); 
   };
 
-  const debouncedSend = useCallback(debounce(handleSubmit, 1000), []);
+  const debouncedSend = useMemo(
+    () =>
+      debounce((msg: string) => {
+        const trimmed = msg.trim();
+        if (!trimmed) return;
+        onSendMessage(trimmed);
+        setNewMessage(""); 
+      }, 1000),
+    [onSendMessage]
+  );
 
   if (!contact) {
     return (
