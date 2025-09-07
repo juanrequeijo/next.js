@@ -4,13 +4,13 @@ export const getUserConversations = async (userId: number) => {
     try {
         const conversations = await getAllConversationsForUserWithLastMessage(userId);
         return conversations.map(conversation => ({
-            id: conversation.conversationId.toString(),
-            title: conversation.conversationTitle || 'Untitled Conversation',
+            id: conversation?.conversationId.toString(),
+            title: conversation?.conversationTitle || 'Untitled Conversation',
             lastMessage: {
-                content: conversation.lastMessageContent,
-                createdAt: conversation.lastMessageCreatedAt,
-                senderId: conversation.lastMessageSenderId,
-                authorName: conversation.lastMessageAuthorName,
+                content: conversation?.lastMessageContent,
+                createdAt: conversation?.lastMessageCreatedAt,
+                senderId: conversation?.lastMessageSenderId,
+                authorName: conversation?.lastMessageAuthorName,
             }
         }));
     } catch (error) {
