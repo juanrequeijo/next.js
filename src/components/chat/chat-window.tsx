@@ -19,13 +19,13 @@ interface ChatWindowProps {
   loading?: boolean;
 }
 
-const MESSAGES_PER_PAGE = 15; 
+const MESSAGES_PER_PAGE = 15;
 
 export default function ChatWindow({ contact, messages, onSendMessage, loading }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
 
   const scrollToBottom = () => {
@@ -33,8 +33,10 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!loading) {
+      scrollToBottom();
+    }
+  }, [messages, loading]);
 
   useEffect(() => {
     setVisibleMessagesCount(MESSAGES_PER_PAGE);
@@ -89,13 +91,14 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
 
       <ScrollArea className="flex-1 bg-background">
         <div className="px-6 py-4">
-          {loading ? (
+          {loading && (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-muted border-t-primary"></div>
             </div>
-          ) : (
-            <>
-              {messages.length > visibleMessagesCount && (
+          )}
+          {!loading || messages.length > 0 ? (
+             <>
+              {messages.length > visibleMessagesCount && !loading && (
                 <div className="flex justify-center mb-4">
                   <Button onClick={loadMoreMessages} variant="outline" size="sm">
                     Load more
@@ -112,7 +115,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
               ))}
               <div ref={messagesEndRef} />
             </>
-          )}
+          ) : null}
         </div>
       </ScrollArea>
 
@@ -127,7 +130,7 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
           />
           <Button
             type="submit"
-            disabled={!newMessage.trim() || isSending}
+            disabled={!newMessage.trim() || isSending }
             size="icon"
             className={cn(
               "rounded-full",
