@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Contact, Message as MessageType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,10 +19,14 @@ interface ChatWindowProps {
   loading?: boolean;
 }
 
+const MESSAGES_PER_PAGE = 15; 
+
 export default function ChatWindow({ contact, messages, onSendMessage, loading }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
@@ -32,10 +36,14 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    setVisibleMessagesCount(MESSAGES_PER_PAGE);
+  }, [contact]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
-    debouncedSend(newMessage); 
+    debouncedSend(newMessage);
   };
 
   const debouncedSend = useMemo(
@@ -44,11 +52,15 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
         const trimmed = msg.trim();
         if (!trimmed) return;
         onSendMessage(trimmed);
-        setNewMessage(""); 
+        setNewMessage("");
         setIsSending(false);
       }, 1000),
     [onSendMessage]
   );
+
+  const loadMoreMessages = () => {
+    setVisibleMessagesCount(prevCount => prevCount + MESSAGES_PER_PAGE);
+  };
 
   if (!contact) {
     return (
@@ -59,6 +71,8 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
       </div>
     );
   }
+
+  const visibleMessages = messages.slice(-visibleMessagesCount);
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-card">
@@ -81,7 +95,15 @@ export default function ChatWindow({ contact, messages, onSendMessage, loading }
             </div>
           ) : (
             <>
-              {messages.map((message) => (
+              {messages.length > visibleMessagesCount && (
+                <div className="flex justify-center mb-4">
+                  <Button onClick={loadMoreMessages} variant="outline" size="sm">
+                    Load more
+                  </Button>
+                </div>
+              )}
+
+              {visibleMessages.map((message) => (
                 <Message
                   key={message.id}
                   message={message}
